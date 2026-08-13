@@ -41,6 +41,8 @@ field calculations on native geometry values and geometry-compatible WKT/WKB inp
   - native `ValueMetaGeometry`
   - geometry-compatible `String` / `Binary` fields with `geom|geometry|wkt|wkb` naming
   - WKT / EWKT / WKB bytes / WKB hex parsing
+  - SQL/MM WKB curve types `CIRCULARSTRING`, `COMPOUNDCURVE`, `CURVEPOLYGON`, `MULTICURVE`, and `MULTISURFACE`
+  - binary preservation of curve geometries across isolated plugin classloaders
 - Output types:
   - metric / coordinate values: `NUMBER`, `STRING`
   - counts and `SRID`: `INTEGER`, `NUMBER`, `STRING`
@@ -122,6 +124,18 @@ If `HOP_HOME` is exported:
 Geometry calculations use the units of the input geometry / CRS as-is. The plugin does not
 reproject and does not perform unit conversion.
 
+### True-curve semantics
+
+SQL/MM curve geometries are preserved exactly while they are parsed and passed into the calculator.
+`GEOMETRY_TYPE` reports the curve-aware names `CircularString`, `CompoundCurve`, `CurvePolygon`,
+`MultiCurve`, and `MultiSurface` instead of the inherited JTS base type names.
+
+Scalar calculations still use the JTS view of the geometry. The custom curve classes supplied by
+`hop-geometry-type` expose a densified linear representation through their JTS superclass, so
+`LENGTH`, `AREA`, `PERIMETER`, envelopes, centroid, validity, simplicity, coordinate counts, and
+similar operations are evaluated on that segmented representation. They are not analytic
+circle/arc calculations and do not use the exact curve control points directly.
+
 ### Geometry family rules
 
 - `AREA`, `PERIMETER`: polygonal geometries only
@@ -168,6 +182,8 @@ reproject and does not perform unit conversion.
 The automated test suite covers:
 
 - WKT / EWKT / WKB geometry input parsing
+- SQL/MM curve WKB types 8-12 and foreign plugin-classloader preservation
+- curve-aware `GEOMETRY_TYPE` results and segmented curve measurement semantics
 - scalar conversion and output typing
 - function semantics for point, line, polygon, multi, empty, invalid, and `null` geometries
 - validation reason/error type/location diagnostics
@@ -175,6 +191,7 @@ The automated test suite covers:
 - width, height, and interior-point helper functions
 - transform metadata defaults, validation, output metadata, and XML roundtrip
 - transform runtime for both `RETURN_NULL` and `FAIL`
+- transform runtime with curve WKB input
 
 Run tests only:
 
