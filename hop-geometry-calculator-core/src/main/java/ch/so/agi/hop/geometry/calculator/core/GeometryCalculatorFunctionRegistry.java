@@ -45,7 +45,8 @@ public final class GeometryCalculatorFunctionRegistry {
               GeometryCalculatorCategory.MEASUREMENTS,
               GeometryCalculatorOutputType.NUMBER,
               DECIMAL_OUTPUTS,
-              geometry -> (geometry instanceof Lineal || geometry instanceof Polygonal) && !geometry.isEmpty(),
+              geometry ->
+                  (geometry instanceof Lineal || geometry instanceof Polygonal) && !geometry.isEmpty(),
               Geometry::getLength),
           function(
               GeometryCalculatorOperationId.PERIMETER,
@@ -193,13 +194,13 @@ public final class GeometryCalculatorFunctionRegistry {
           function(
               GeometryCalculatorOperationId.GEOMETRY_TYPE,
               "Geometry Type",
-              "Returns the JTS geometry type name.",
+              "Returns the SQL/MM curve type name for true curves, otherwise the JTS geometry type name.",
               "Any parseable geometry",
               GeometryCalculatorCategory.STRUCTURE,
               GeometryCalculatorOutputType.STRING,
               Set.of(GeometryCalculatorOutputType.STRING),
               geometry -> true,
-              Geometry::getGeometryType),
+              GeometryTypeNames::name),
           function(
               GeometryCalculatorOperationId.NUM_POINTS,
               "Num Points",
@@ -326,7 +327,8 @@ public final class GeometryCalculatorFunctionRegistry {
   public static List<GeometryCalculatorFunction> list() {
     return FUNCTIONS.stream()
         .sorted(
-            Comparator.comparing((GeometryCalculatorFunction function) -> function.category().getLabel())
+            Comparator.comparing(
+                    (GeometryCalculatorFunction function) -> function.category().getLabel())
                 .thenComparing(GeometryCalculatorFunction::label))
         .toList();
   }
@@ -339,7 +341,8 @@ public final class GeometryCalculatorFunctionRegistry {
     return find(id);
   }
 
-  public static Optional<GeometryCalculatorFunction> find(GeometryCalculatorOperationId operationId) {
+  public static Optional<GeometryCalculatorFunction> find(
+      GeometryCalculatorOperationId operationId) {
     return FUNCTIONS.stream().filter(function -> function.id() == operationId).findFirst();
   }
 
