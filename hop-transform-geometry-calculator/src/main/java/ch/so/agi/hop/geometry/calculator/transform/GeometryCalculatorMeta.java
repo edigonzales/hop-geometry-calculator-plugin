@@ -29,7 +29,8 @@ import org.apache.hop.pipeline.transform.TransformMeta;
     image = "ch/so/agi/hop/geometry/calculator/transform/icons/geometry-calculator.svg",
     categoryDescription = "Geospatial",
     documentationUrl = "",
-    keywords = {"geospatial", "geometry", "calculator", "area", "length", "srid"})
+    keywords = {"geospatial", "geometry", "calculator", "area", "length", "srid"},
+    classLoaderGroup = "sogeo-geometry")
 public class GeometryCalculatorMeta
     extends BaseTransformMeta<GeometryCalculator, GeometryCalculatorData> {
 

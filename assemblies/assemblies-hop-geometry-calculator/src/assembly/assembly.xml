@@ -21,14 +21,14 @@
 
     <dependencySet>
       <useProjectArtifact>false</useProjectArtifact>
-      <useTransitiveDependencies>true</useTransitiveDependencies>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
       <outputDirectory>plugins/transforms/hop-geometry-calculator/lib</outputDirectory>
       <outputFileNameMapping>${artifact.artifactId}${dashClassifier?}.${artifact.extension}</outputFileNameMapping>
       <scope>runtime</scope>
       <unpack>false</unpack>
-      <excludes>
-        <exclude>ch.so.agi:hop-transform-geometry-calculator</exclude>
-      </excludes>
+      <includes>
+        <include>ch.so.agi:hop-geometry-calculator-core</include>
+      </includes>
     </dependencySet>
   </dependencySets>
 </assembly>

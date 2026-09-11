@@ -27,9 +27,10 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 cd "${REPO_ROOT}"
 
 PLUGIN_DIR="${HOP_HOME}/plugins/transforms/hop-geometry-calculator"
-ZIP_PATH="assemblies/assemblies-hop-geometry-calculator/target/hop-geometry-calculator-plugin-0.1.0-SNAPSHOT.zip"
+VERSION="$(mvn -U -B -ntp -q -DforceStdout help:evaluate -Dexpression=project.version)"
+ZIP_PATH="assemblies/assemblies-hop-geometry-calculator/target/hop-geometry-calculator-plugin-${VERSION}.zip"
 
-mvn -q -DskipTests package
+mvn -q -U -B -ntp -DskipTests package
 
 if [[ ! -f "${ZIP_PATH}" ]]; then
   echo "Plugin ZIP not found: ${ZIP_PATH}"

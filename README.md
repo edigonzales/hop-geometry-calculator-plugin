@@ -1,6 +1,6 @@
 # hop-geometry-calculator-plugin
 
-Apache Hop 2.17 transform plugin that adds a dedicated `Geometry Calculator` for row-wise GIS
+Apache Hop 2.19.0 transform plugin that adds a dedicated `Geometry Calculator` for row-wise GIS
 field calculations on native geometry values and geometry-compatible WKT/WKB inputs.
 
 ## Implemented scope
@@ -75,10 +75,15 @@ mvn -DskipTests package
 
 Build prerequisites:
 
-- Java 17
+- Java 21 (Java 25 is also covered by the compatibility matrix)
 - Maven
-- access to Maven Central and the configured `sogeo` repositories
-- `hop-geometry-type` reachable in the local/remote Maven repositories
+- access to Maven Central and `https://jars.interlis.guru`
+- `ch.so.agi:hop-geometry-type:0.2.0-SNAPSHOT` reachable in the Maven snapshot repository
+
+The Geometry Type snapshot is a normal Maven `0.2.0-SNAPSHOT` dependency. Maven resolves the
+current snapshot through repository metadata; timestamped snapshot versions are never pinned in
+this repository. Geometry Type and JTS are provided by the separately installed Geometry Type
+plugin and are deliberately not duplicated in the Calculator ZIP.
 
 ## Produced artifacts
 
@@ -116,6 +121,27 @@ If `HOP_HOME` is exported:
 ```bash
 ./scripts/dev-sync-hop-plugin.sh
 ```
+
+## CI and publication
+
+The GitHub Actions matrix runs Java 21 and 25 on Ubuntu, macOS and Windows. Ubuntu with Java 21
+is the canonical run: it executes `clean verify`, validates the installation ZIP and creates the
+only publishable bundle. The other five jobs execute compatibility tests with `clean test`.
+
+The canonical job builds against the current `hop-geometry-type-plugin` main snapshot. The
+Installed-Hop E2E installs both ZIPs into a clean Apache Hop 2.19.0 installation and runs the
+deterministic pipeline in `e2e/geometry-calculator.hpl`.
+
+The published Maven ZIP coordinate is:
+
+```text
+ch.so.agi:hop-geometry-calculator-plugin:0.1.0-SNAPSHOT
+```
+
+Publication uses the shared `hop-plugin-ci` workflow and `INTERLIS_MAVEN_USERNAME` /
+`INTERLIS_MAVEN_TOKEN` secrets. Pull requests publish nothing; GitHub plugin releases are no
+longer created. The canonical ZIP is validated before publication and is published without a
+rebuild.
 
 ## Function semantics
 
