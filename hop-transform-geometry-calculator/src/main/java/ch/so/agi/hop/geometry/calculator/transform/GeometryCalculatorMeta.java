@@ -28,7 +28,8 @@ import org.apache.hop.pipeline.transform.TransformMeta;
     description = "Row-wise geometry measurements, coordinates, extent, and metadata calculations",
     image = "ch/so/agi/hop/geometry/calculator/transform/icons/geometry-calculator.svg",
     categoryDescription = "Geospatial",
-    documentationUrl = "",
+    documentationUrl =
+        "https://edigonzales.github.io/hop-geometry-calculator-plugin/transforms/geometry-calculator.html",
     classLoaderGroup = "sogeo-geometry",
     keywords = {"geospatial", "geometry", "calculator", "area", "length", "srid"})
 public class GeometryCalculatorMeta

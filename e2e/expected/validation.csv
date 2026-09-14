@@ -1,0 +1,4 @@
+geometry;is_valid
+POLYGON ((0 0, 2 0, 2 2, 0 2, 0 0));Y
+POLYGON ((0 0, 2 2, 2 0, 0 2, 0 0));N
+POLYGON EMPTY;Y

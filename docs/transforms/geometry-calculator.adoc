@@ -1,0 +1,218 @@
+= Geometry Calculator
+:plugin-id: GEOMETRY_CALCULATOR_TRANSFORM
+:plugin-type: transform
+:description: Row-wise geometry measurements, coordinates, extent, and metadata calculations.
+
+The Geometry Calculator adds row-wise geometry calculations to Apache Hop. Every input row provides
+a geometry; the transform evaluates exactly one configured operation and adds one scalar output
+field, for example an area, a coordinate, an extent value or a validity flag.
+
+== Description
+
+The transform accepts native Hop geometry values and geometry-compatible text or binary fields. It
+is designed for pipelines that derive measurements or diagnostics from geometries without an
+overlay, edit or reprojection step:
+
+* measurements: `AREA`, `LENGTH`, `PERIMETER`, `WIDTH`, `HEIGHT`
+* coordinates: `X`, `Y`, `Z`, `CENTROID_X`, `CENTROID_Y`, `INTERIOR_POINT_X`, `INTERIOR_POINT_Y`
+* extent: `XMIN`, `YMIN`, `XMAX`, `YMAX`
+* metadata and diagnostics: `GEOMETRY_TYPE`, `NUM_POINTS`, `NUM_GEOMETRIES`, `IS_EMPTY`,
+  `IS_VALID`, `IS_VALID_REASON`, `IS_VALID_ERROR_TYPE`, `IS_VALID_LOCATION_X`,
+  `IS_VALID_LOCATION_Y`, `IS_SIMPLE`, `IS_SIMPLE_LOCATION_X`, `IS_SIMPLE_LOCATION_Y`, `SRID`
+
+Exactly one calculation is configured per transform. Chain several Geometry Calculator transforms
+to add more than one result to a row.
+
+== Input
+
+The transform is a regular transform: it consumes one incoming row per row and returns the same
+rows with one added output field. It does not require a specific upstream transform.
+
+Supported geometry sources:
+
+* native geometry values (`ValueMetaGeometry`) provided by the Geometry Type plugin
+* `String` and `Binary` fields whose name contains `geom`, `geometry`, `wkt` or `wkb`
+* WKT and EWKT text
+* WKB bytes and WKB hex text
+
+SQL/MM curve types (`CIRCULARSTRING`, `COMPOUNDCURVE`, `CURVEPOLYGON`, `MULTICURVE`,
+`MULTISURFACE`) are parsed and preserved, including across isolated plugin class loaders.
+
+The input field can be selected explicitly or left empty: an empty selection enables the automatic
+field detection, which resolves the geometry field by field name and value metadata.
+
+[[options]]
+== Options
+
+[cols="1,3,1",options="header"]
+|===
+|Option |Description |Default
+
+|Input geometry field
+|Name of the field that holds the geometry. Leave empty to detect the field automatically.
+|(empty, auto-detect)
+
+|Operation
+|The calculation to apply, see <<operations-table>>.
+|`AREA`
+
+|Output field name
+|Name of the added output field.
+|`area`
+
+|Output type
+|Hop type of the output field, see <<output>>.
+|`NUMBER`
+
+|Error mode
+|`RETURN_NULL` or `FAIL`, see <<error-handling>>.
+|`RETURN_NULL`
+|===
+
+[[operations-table]]
+=== Operations
+
+[cols="1,3",options="header"]
+|===
+|Operation |Result
+
+|`AREA`
+|Area of polygonal geometries.
+
+|`LENGTH`
+|Length of lineal and polygonal geometries.
+
+|`PERIMETER`
+|Perimeter of polygonal geometries.
+
+|`WIDTH`, `HEIGHT`
+|Extent of any parseable geometry; `null` for empty geometries.
+
+|`X`, `Y`, `Z`
+|Coordinate of non-empty points; `Z` is `null` when the point has no Z ordinate.
+
+|`CENTROID_X`, `CENTROID_Y`
+|Centroid of non-empty valid geometries.
+
+|`INTERIOR_POINT_X`, `INTERIOR_POINT_Y`
+|Interior point of any parseable geometry; `null` for empty geometries.
+
+|`XMIN`, `YMIN`, `XMAX`, `YMAX`
+|Envelope of any non-empty parseable geometry.
+
+|`GEOMETRY_TYPE`
+|Geometry type name; SQL/MM curves report `CircularString`, `CompoundCurve`, `CurvePolygon`,
+`MultiCurve` and `MultiSurface`.
+
+|`NUM_POINTS`, `NUM_GEOMETRIES`
+|Coordinate and geometry counts of any parseable geometry, including empty geometries.
+
+|`IS_EMPTY`
+|`true` for empty geometries only.
+
+|`IS_VALID`
+|JTS validation result for any parseable geometry.
+
+|`IS_VALID_REASON`
+|Validation message of invalid geometries (`TopologyValidationError#getMessage`); `null` for valid geometries.
+
+|`IS_VALID_ERROR_TYPE`
+|Stable symbolic name such as `SELF_INTERSECTION` or `TOO_FEW_POINTS`; `null` for valid geometries.
+
+|`IS_VALID_LOCATION_X`, `IS_VALID_LOCATION_Y`
+|Scalar coordinates of the validation error; `null` for valid geometries.
+
+|`IS_SIMPLE`, `IS_SIMPLE_LOCATION_X`, `IS_SIMPLE_LOCATION_Y`
+|Simplicity result and its error location; locations are `null` for simple geometries.
+
+|`SRID`
+|SRID of the geometry; `null` for `SRID <= 0`.
+|===
+
+[[output]]
+== Output
+
+The transform adds exactly one output field.
+
+[cols="3,2",options="header"]
+|===
+|Operation group |Allowed output types
+
+|`AREA`, `LENGTH`, `PERIMETER`, `WIDTH`, `HEIGHT`, `X`, `Y`, `Z`, `CENTROID_X`, `CENTROID_Y`,
+`INTERIOR_POINT_X`, `INTERIOR_POINT_Y`, `XMIN`, `YMIN`, `XMAX`, `YMAX`, `IS_VALID_LOCATION_X`,
+`IS_VALID_LOCATION_Y`, `IS_SIMPLE_LOCATION_X`, `IS_SIMPLE_LOCATION_Y`
+|`NUMBER`, `STRING`
+
+|`NUM_POINTS`, `NUM_GEOMETRIES`, `SRID`
+|`INTEGER`, `NUMBER`, `STRING`
+
+|`IS_EMPTY`, `IS_VALID`, `IS_SIMPLE`
+|`BOOLEAN`, `STRING`
+
+|`GEOMETRY_TYPE`, `IS_VALID_REASON`, `IS_VALID_ERROR_TYPE`
+|`STRING`
+|===
+
+Value semantics:
+
+* `null` input values produce `null` output values
+* empty geometries stay distinguishable from `null`
+* empty geometries are valid and simple; use `IS_EMPTY` to detect them
+* all calculations use the units and the CRS of the input geometry as-is
+* measurements of SQL/MM curves use the segmented JTS representation, see <<limitations>>
+
+== Supported engines
+
+[cols="2,3",options="header"]
+|===
+|Engine |Status
+
+|`Local` (Hop local pipeline engine)
+|Supported; the released plugin is verified against this engine in CI.
+
+|`LocalSingle` (Hop local single threaded pipeline engine)
+|Not part of the test matrix.
+
+|Remote
+|Requires the same plugin and Geometry Type installation on the Hop server.
+
+|Beam engines (`Beam*`)
+|Not part of the test matrix. Geometry values are provided by the Geometry Type plugin and are not a Beam-native schema.
+|===
+
+The transform does not restrict engines itself; the table describes the verified and tested scope.
+
+== Examples
+
+* xref:../../examples/area/calculate-area.hpl[Calculate the area of polygons]
+* xref:../../examples/centroid/calculate-centroid.hpl[Calculate the X coordinate of polygon centroids]
+* xref:../../examples/validation/geometry-validity.hpl[Check geometry validity]
+
+Every example is a minimal pipeline with sample data and exactly one calculation.
+
+[[error-handling]]
+== Error handling
+
+[cols="1,3",options="header"]
+|===
+|Mode |Behaviour
+
+|`RETURN_NULL`
+|Parse, type and compatibility failures produce `null` output values. The transform counts the failures and logs one summary line at the end.
+
+|`FAIL`
+|The first parse, type or compatibility failure raises a `HopException` and fails the pipeline.
+|===
+
+[[limitations]]
+== Limitations
+
+* No reprojection and no unit conversion: calculations use the geometry and its CRS as-is.
+* One calculation per transform; chain transforms for more results.
+* No formula parser, no overlay or edit operations.
+* `AREA`, `PERIMETER`, `WIDTH` and `HEIGHT` are planar calculations in the units of the geometry.
+* SQL/MM curves are preserved, but scalar calculations use the densified linear JTS
+  representation that the curve classes expose through their JTS superclass. `LENGTH`, `AREA` and
+  similar operations are segment-based, not analytic circle or arc calculations.
+* Validation and simplicity locations are exposed as scalar `X`/`Y` values only; no geometry
+  output is produced.

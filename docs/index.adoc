@@ -1,0 +1,10 @@
+= Geometry Calculator Plugin
+:description: Apache Hop transform plugin for row-wise geometry calculations.
+
+The Geometry Calculator is an Apache Hop transform plugin for row-wise geometry calculations on
+native geometry values and geometry-compatible WKT/WKB inputs.
+
+* xref:transforms/geometry-calculator.adoc[Geometry Calculator transform]
+
+User examples live in the repository under `examples/`. Automated integration tests run from
+`e2e/` and are not part of the user documentation.
