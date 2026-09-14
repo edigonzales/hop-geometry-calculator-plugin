@@ -1,3 +1,4 @@
+[[geometry-calculator]]
 = Geometry Calculator
 :plugin-id: GEOMETRY_CALCULATOR_TRANSFORM
 :plugin-type: transform

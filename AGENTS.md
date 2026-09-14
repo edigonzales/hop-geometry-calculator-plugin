@@ -52,6 +52,22 @@ The script installs both ZIPs, runs `e2e/geometry-calculator.hpl` and executes e
 `e2e/expected/*.csv`. In CI the canonical plugin artifact and the Geometry Type artifact are
 downloaded instead of rebuilt.
 
+### Documentation site
+
+The handbook is a single-page Biblios site built from `docs/` and deployed to GitHub Pages by
+[.github/workflows/biblios-docs.yml](.github/workflows/biblios-docs.yml). Build and preview:
+
+```bash
+python3 scripts/build-docs-site.py --serve
+```
+
+The script resolves the latest `guru.interlis:thoth-biblios:0.0.1-SNAPSHOT:all` snapshot from
+`https://jars.interlis.guru/snapshots/`, builds the working tree or an exact `--revision`, copies
+`examples/` into the site, and checks links, anchors, example downloads and search entries with
+`scripts/check-docs-site.py`. Pull requests only build; pushes to `main` that touch `docs/**` or
+`examples/**` deploy to GitHub Pages (Pages must be set to "GitHub Actions" in the repository
+settings).
+
 ### Publication
 
 Pushes to `main` publish the POM-verified plugin ZIP through the shared `plugin-publish.yml`

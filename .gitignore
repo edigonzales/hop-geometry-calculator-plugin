@@ -11,6 +11,10 @@ target/
 *.war
 *.ear
 
+# Biblios
+docs/.downloads/
+docs/build/
+
 # Maven
 pom.xml.tag
 pom.xml.releaseBackup

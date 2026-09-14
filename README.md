@@ -40,9 +40,16 @@ Geometry Type or JTS. For development, sync the locally built plugin:
 
 ## Documentation
 
+- Rendered handbook: <https://edigonzales.github.io/hop-geometry-calculator-plugin/geometry-calculator/main/>
 - Canonical reference: [`docs/transforms/geometry-calculator.adoc`](docs/transforms/geometry-calculator.adoc)
 - User examples: [`examples/`](examples/README.md)
 - Automated integration tests: `e2e/` (not part of the user documentation)
+
+Build and preview the handbook locally:
+
+```bash
+python3 scripts/build-docs-site.py --serve
+```
 
 ## Build
 
@@ -92,7 +99,8 @@ and the documentation examples from the canonical ZIP. Pushes to `main` publish
 `ch.so.agi:hop-geometry-calculator-plugin:0.1.0-SNAPSHOT` to
 `https://jars.interlis.guru/snapshots/` through the shared
 [`hop-plugin-ci`](https://github.com/edigonzales/hop-plugin-ci) workflows. Pull requests publish
-nothing.
+nothing. The handbook builds in a separate workflow and deploys to GitHub Pages when `docs/**` or
+`examples/**` change.
 
 ## License
 

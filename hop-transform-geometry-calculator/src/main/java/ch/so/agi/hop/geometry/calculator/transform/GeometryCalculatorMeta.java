@@ -29,7 +29,7 @@ import org.apache.hop.pipeline.transform.TransformMeta;
     image = "ch/so/agi/hop/geometry/calculator/transform/icons/geometry-calculator.svg",
     categoryDescription = "Geospatial",
     documentationUrl =
-        "https://edigonzales.github.io/hop-geometry-calculator-plugin/transforms/geometry-calculator.html",
+        "https://edigonzales.github.io/hop-geometry-calculator-plugin/geometry-calculator/main/index.html#geometry-calculator",
     classLoaderGroup = "sogeo-geometry",
     keywords = {"geospatial", "geometry", "calculator", "area", "length", "srid"})
 public class GeometryCalculatorMeta
