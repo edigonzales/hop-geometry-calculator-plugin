@@ -107,6 +107,9 @@ def main():
         generated = source / 'docs/biblios.local.yml'
         generated.write_text(config)
         run(java, '-jar', str(jar), 'build', '--config', str(generated), '--output', str(output), '--clean', cwd=source)
+        # GUI mockups use a smaller font; the stylesheet is appended to the generated theme.
+        with (output / 'site-assets/styles.css').open('a') as styles:
+            styles.write('\n' + (source / 'docs/site.css').read_text())
         # The manual links to examples/ with the same relative paths as on GitHub.
         shutil.copytree(source / 'examples', output / 'examples', dirs_exist_ok=True)
     (output / '.nojekyll').touch()
