@@ -10,8 +10,8 @@ output:
 ui:
   theme: default
   show_version_badge: false
-  show_edit_link: true
-  show_source_link: true
+  show_edit_link: false
+  show_source_link: false
   syntax_highlighting: prism
   version_switch_mode: start_page
   search_language_mode: multilingual_safe
@@ -19,8 +19,6 @@ ui:
   content_toc: off
   content_section_numbers: on
   content_section_number_depth: 3
-  edit_url_pattern: "https://github.com/edigonzales/hop-geometry-calculator-plugin/edit/{branch}/{path}"
-  source_url_pattern: "https://github.com/edigonzales/hop-geometry-calculator-plugin/blob/{branch}/{path}"
 
 content:
   sources:
