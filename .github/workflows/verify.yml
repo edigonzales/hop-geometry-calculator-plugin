@@ -31,7 +31,7 @@ jobs:
       pom-file: pom.xml
       zip-descriptors: >-
         [{"artifactId":"hop-geometry-calculator-plugin","zipGlob":"assemblies/assemblies-hop-geometry-calculator/target/hop-geometry-calculator-plugin-*.zip","pluginRoot":"plugins/transforms/hop-geometry-calculator"}]
-      validation-commands: '["python3 scripts/verify-package.py"]'
+      validation-commands: '["python3 scripts/verify-package.py", "python3 .ci/hop-plugin-ci/scripts/check-plugin-repository.py --profile standard-plugin"]'
       artifact-name-prefix: hop-geometry-calculator-plugin
       group-id: ch.so.agi
       hop-version: 2.19.0

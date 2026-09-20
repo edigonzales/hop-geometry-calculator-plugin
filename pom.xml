@@ -16,6 +16,13 @@
 
   <name>Apache Hop Geometry Calculator Plugin</name>
   <description>Apache Hop transform plugin for row-wise geometry calculations.</description>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/license/mit/</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 
   <modules>
     <module>hop-geometry-calculator-core</module>

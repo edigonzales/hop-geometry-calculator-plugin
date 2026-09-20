@@ -51,7 +51,7 @@ Build and preview the handbook locally:
 python3 scripts/build-docs-site.py --serve
 ```
 
-## Build
+## Build and development
 
 ```bash
 mvn clean verify
@@ -84,7 +84,7 @@ python3 scripts/run-e2e.py --hop-home "$HOP_HOME" --plugin-zip <plugin-zip> --ge
 `run-e2e.py` installs both ZIPs into a clean Hop installation, runs the deterministic E2E pipeline
 and executes every documentation example against the expected results in `e2e/expected/`.
 
-## Modules
+## Modules and artifacts
 
 - `hop-geometry-calculator-core`: geometry input parsing, field detection, function registry,
   scalar conversion
@@ -104,4 +104,4 @@ nothing. The handbook builds in a separate workflow and deploys to GitHub Pages 
 
 ## License
 
-MIT
+See [LICENSE](LICENSE).
