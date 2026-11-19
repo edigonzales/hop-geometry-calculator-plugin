@@ -4,10 +4,7 @@
 
 Before changing pipelines or test setup, read the
 [shared CI contract](https://github.com/edigonzales/hop-plugin-ci/blob/main/docs/ci-contract.md).
-Also read the
-[plugin repository contract](https://github.com/edigonzales/hop-plugin-ci/blob/main/docs/plugin-repository-contract.md).
-The documentation follows `main`; use the interfaces at this repo's actual workflow/helper
-revisions and preserve existing pins and `ci-ref` values.
+Use the CI interfaces at the shared workflow pin.
 
 Run the commands below from this repository root in Bash, using Python 3, Maven and JDK 21
 (`JAVA_HOME` and `PATH` pointing to that JDK). Compatibility jobs also use JDK 25. For headless
@@ -30,8 +27,7 @@ mvn -s "$MAVEN_SETTINGS" -U -B -ntp clean verify
 python3 scripts/verify-package.py
 ```
 
-The canonical build is Ubuntu/Java 21. It runs the unit tests and the
-`hop-plugin-doclint-maven-plugin` documentation checks for `docs/` and `examples/`. Compatibility
+The canonical build is Ubuntu/Java 21. It runs the unit tests and packages the ZIP. Compatibility
 uses the same Maven settings with `clean test` instead of `clean verify`.
 
 The build resolves `ch.so.agi:hop-geometry-type:0.2.0-SNAPSHOT` from the snapshot repository; the
@@ -72,6 +68,6 @@ settings).
 
 ### Publication
 
-Pushes to `main` publish the POM-verified plugin ZIP through the shared `plugin-publish.yml`
+Pushes to `main` publish the verified plugin ZIP through the shared `publish.yml`
 workflow to `https://jars.interlis.guru/snapshots/`. Publication depends on the verify workflow and
 the installed E2E job; pull requests publish nothing.

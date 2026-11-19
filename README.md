@@ -57,7 +57,7 @@ python3 scripts/build-docs-site.py --serve
 mvn clean verify
 ```
 
-`verify` runs the unit tests and the `hop-plugin-doclint-maven-plugin` documentation checks. The
+`verify` runs the unit tests. The
 build inherits Java, Hop and plugin versions from
 [`hop-plugin-parent`](https://github.com/edigonzales/hop-plugin-parent) and needs access to Maven
 Central and `https://jars.interlis.guru`.
