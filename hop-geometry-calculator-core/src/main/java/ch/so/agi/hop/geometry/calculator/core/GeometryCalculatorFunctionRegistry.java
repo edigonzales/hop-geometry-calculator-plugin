@@ -355,8 +355,8 @@ public final class GeometryCalculatorFunctionRegistry {
       GeometryCalculatorOutputType defaultOutputType,
       Set<GeometryCalculatorOutputType> allowedOutputTypes,
       java.util.function.Predicate<Geometry> supports,
-      SimpleGeometryCalculatorFunction.Evaluator evaluator) {
-    return new SimpleGeometryCalculatorFunction(
+      GeometryCalculatorFunction.Evaluator evaluator) {
+    return new GeometryCalculatorFunction(
         id,
         label,
         description,

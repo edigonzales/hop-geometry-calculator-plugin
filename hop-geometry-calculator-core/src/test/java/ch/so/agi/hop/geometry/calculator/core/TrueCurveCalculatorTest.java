@@ -22,10 +22,10 @@ import org.locationtech.jts.geom.Polygon;
 
 class TrueCurveCalculatorTest {
 
-  private final GeometryInputReader reader = new GeometryInputReader();
+  private final GeometryValueParser parser = new GeometryValueParser();
 
   @Test
-  void readsAllSupportedTrueCurveWkbTypesWithoutLinearizingThem() {
+  void readsAllSupportedTrueCurveWkbTypesWithoutLinearizingThem() throws Exception {
     GeometryFactory factory = new GeometryFactory();
     List<Geometry> curves =
         List.of(
@@ -37,12 +37,11 @@ class TrueCurveCalculatorTest {
 
     for (Geometry source : curves) {
       source.setSRID(2056);
-      GeometryInputResult result =
-          reader.read(new ValueMetaString("geometry_wkb"), CurveGeometrySupport.writeWkb(source));
+      Geometry result =
+          parser.parseGeometry(new ValueMetaString("geometry_wkb"), CurveGeometrySupport.writeWkb(source));
 
-      assertThat(result.failure()).isNull();
-      assertThat(result.geometry()).isExactlyInstanceOf(source.getClass());
-      assertThat(result.geometry().getSRID()).isEqualTo(2056);
+      assertThat(result).isExactlyInstanceOf(source.getClass());
+      assertThat(result.getSRID()).isEqualTo(2056);
     }
   }
 
@@ -91,12 +90,11 @@ class TrueCurveCalculatorTest {
     byte[] wkb = CurveGeometrySupport.writeWkb(source);
 
     try (ForeignCurveGeometryHandle foreignGeometry = ForeignCurveGeometryHandle.create(wkb, 2056)) {
-      GeometryInputResult result = reader.read(null, foreignGeometry.geometry());
+      Geometry result = parser.parseGeometry(null, foreignGeometry.geometry());
 
-      assertThat(result.failure()).isNull();
-      assertThat(result.geometry()).isInstanceOf(CurvePolygon.class);
-      assertThat(result.geometry().getSRID()).isEqualTo(2056);
-      CurvePolygon parsed = (CurvePolygon) result.geometry();
+      assertThat(result).isInstanceOf(CurvePolygon.class);
+      assertThat(result.getSRID()).isEqualTo(2056);
+      CurvePolygon parsed = (CurvePolygon) result;
       assertThat(parsed.getCurveRings()).hasSize(1);
       assertThat(parsed.getCurveRings().get(0)).isInstanceOf(CircularString.class);
       CircularString ring = (CircularString) parsed.getCurveRings().get(0);
