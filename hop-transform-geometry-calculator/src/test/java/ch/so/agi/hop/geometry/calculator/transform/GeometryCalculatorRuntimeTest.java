@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import ch.so.agi.hop.geometry.calculator.core.GeometryCalculatorErrorMode;
 import ch.so.agi.hop.geometry.calculator.core.GeometryCalculatorOutputType;
 import com.atolcd.hop.core.row.value.ValueMetaGeometry;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.hop.core.HopEnvironment;
@@ -14,12 +15,15 @@ import org.apache.hop.core.IRowSet;
 import org.apache.hop.core.exception.HopException;
 import org.apache.hop.core.row.IRowMeta;
 import org.apache.hop.core.row.RowMeta;
+import org.apache.hop.core.row.value.ValueMetaJson;
 import org.apache.hop.core.row.value.ValueMetaString;
 import org.apache.hop.pipeline.PipelineMeta;
 import org.apache.hop.pipeline.transform.TransformMeta;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.locationtech.jts.io.WKTReader;
 
 class GeometryCalculatorRuntimeTest {
@@ -56,21 +60,26 @@ class GeometryCalculatorRuntimeTest {
 
     RowMeta inputRowMeta = new RowMeta();
     inputRowMeta.addValueMeta(new ValueMetaGeometry("geometry"));
+    inputRowMeta.addValueMeta(new ValueMetaJson("properties"));
+    var properties = JsonNodeFactory.instance.objectNode().put("id", 42);
     transform.setInput(
         inputRowMeta,
         List.of(
-            new Object[] {wktReader.read("POLYGON ((0 0, 2 0, 2 2, 0 2, 0 0))")},
-            new Object[] {wktReader.read("POINT (1 1)")},
-            new Object[] {null}));
+            new Object[] {wktReader.read("POLYGON ((0 0, 2 0, 2 2, 0 2, 0 0))"), properties},
+            new Object[] {wktReader.read("POINT (1 1)"), properties},
+            new Object[] {null, properties}));
 
     BlockingRowSet output = addOutputRowSet(transform);
     runTransform(transform);
 
     List<Object[]> rows = drainRows(output);
-    assertThat(rows).hasSize(3);
-    assertThat(rows.get(0)[1]).isEqualTo(4.0d);
-    assertThat(rows.get(1)[1]).isNull();
-    assertThat(rows.get(2)[1]).isNull();
+    assertThat(rows).hasSize(3).allSatisfy(row -> assertThat(row[1]).isSameAs(properties));
+    assertThat(output.getRowMeta().getValueMeta(0).getType())
+        .isEqualTo(inputRowMeta.getValueMeta(0).getType());
+    assertThat(output.getRowMeta().getValueMeta(1)).isInstanceOf(ValueMetaJson.class);
+    assertThat(rows.get(0)[2]).isEqualTo(4.0d);
+    assertThat(rows.get(1)[2]).isNull();
+    assertThat(rows.get(2)[2]).isNull();
   }
 
   @Test
@@ -204,8 +213,13 @@ class GeometryCalculatorRuntimeTest {
     assertThat(interiorRows.get(1)[1]).isEqualTo(5.0d);
   }
 
-  @Test
-  void failModeRaisesOnIncompatibleGeometry() throws Exception {
+  @ParameterizedTest
+  @CsvSource({
+    "'LINESTRING (0 0, 1 1)', Geometry is not compatible with the configured operation",
+    "'not a geometry', Unable to parse geometry input"
+  })
+  void failModeReportsIncompatibleGeometriesAndParseErrorsSeparately(String input, String message)
+      throws Exception {
     GeometryCalculatorMeta meta = new GeometryCalculatorMeta();
     meta.setDefault();
     meta.setInputGeometryFieldName("geometry");
@@ -223,15 +237,14 @@ class GeometryCalculatorRuntimeTest {
             new PipelineMeta());
 
     RowMeta inputRowMeta = new RowMeta();
-    inputRowMeta.addValueMeta(new ValueMetaGeometry("geometry"));
-    transform.setInput(
-        inputRowMeta, List.<Object[]>of(new Object[] {wktReader.read("LINESTRING (0 0, 1 1)")}));
+    inputRowMeta.addValueMeta(new ValueMetaString("geometry"));
+    transform.setInput(inputRowMeta, List.<Object[]>of(new Object[] {input}));
 
     addOutputRowSet(transform);
 
     assertThatThrownBy(() -> runTransform(transform))
         .isInstanceOf(HopException.class)
-        .hasMessageContaining("Geometry is not compatible with the configured operation");
+        .hasMessageContaining(message);
   }
 
   private BlockingRowSet addOutputRowSet(TestGeometryCalculator transform) {

@@ -2,7 +2,7 @@ package ch.so.agi.hop.geometry.calculator.transform;
 
 import ch.so.agi.hop.geometry.calculator.core.GeometryCalculatorErrorMode;
 import ch.so.agi.hop.geometry.calculator.core.GeometryFieldSelectionResolver;
-import ch.so.agi.hop.geometry.calculator.core.GeometryInputResult;
+import ch.so.agi.hop.geometry.calculator.core.GeometryValueParser;
 import ch.so.agi.hop.geometry.calculator.core.ScalarResultConverter;
 import java.util.stream.Collectors;
 import org.apache.hop.core.exception.HopException;
@@ -21,6 +21,8 @@ public class GeometryCalculator
 
   private static final GeometryFieldSelectionResolver GEOMETRY_FIELD_SELECTION_RESOLVER =
       new GeometryFieldSelectionResolver();
+
+  private final GeometryValueParser geometryParser = new GeometryValueParser();
 
   public GeometryCalculator(
       TransformMeta transformMeta,
@@ -69,16 +71,16 @@ public class GeometryCalculator
   private Object evaluateRow(Object[] row) throws HopException {
     IValueMeta valueMeta = getInputRowMeta().getValueMeta(data.inputGeometryFieldIndex);
     Object value = data.inputGeometryFieldIndex < row.length ? row[data.inputGeometryFieldIndex] : null;
-    GeometryInputResult inputResult = data.inputReader.read(valueMeta, value);
-
-    if (inputResult.nullValue()) {
+    Geometry geometry;
+    try {
+      geometry = geometryParser.parseGeometry(valueMeta, value);
+    } catch (Exception e) {
+      return handleFailure("parse failure", "Unable to parse geometry input", e);
+    }
+    if (geometry == null) {
       return null;
     }
-    if (inputResult.hasFailure()) {
-      return handleFailure("parse failure", "Unable to parse geometry input", inputResult.failure());
-    }
 
-    Geometry geometry = inputResult.geometry();
     if (!data.function.supports(geometry)) {
       return handleFailure(
           unsupportedReason(geometry), "Geometry is not compatible with the configured operation", null);
@@ -112,9 +114,6 @@ public class GeometryCalculator
   }
 
   private String unsupportedReason(Geometry geometry) {
-    if (geometry == null) {
-      return "null geometry";
-    }
     if (geometry.isEmpty()) {
       return "empty geometry";
     }
